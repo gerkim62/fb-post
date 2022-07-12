@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script defer src="app.js"></script>
+  <title>Post to Facebook</title>
+  <style>
+  *{
+    box-sizing: border-box;
+  }
+  body{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+  }
+    span{
+      background: #eee;
+      color: orangered;
+      font-size: 1.2rem;
+      padding: 5px;
+    }
+    a{
+      border: 2px solid #eee;
+      padding: 10px;
+      text-transform: uppercase;
+      margin: 20px;
+      font-size: 1.5rem;
+    }
+    p{
+      font-size: 1.2rem;
+      border: #ddd solid 2px;
+      text-transform: uppercase;
+      padding: 10px;
+      margin: -1px;
+    }
+    #time-taken{
+      text-transform: lowercase;
+    }
+  </style>
+</head>
+
+<body>
+  <p>Posted to <span id="page-name">Colours daily</span></p>
+  <p>Took <span id="time-taken">100ms</span></p>
+  <a id="link-to-post" href="">See the post live</a>
+  <script>
+    const pageEl = document.querySelector('#page-name')
+const timeEl = document.querySelector('#time-taken')
+const linkEl = document.querySelector('a')
+
+
+const facebookPageAccessToken = "EAAH8rZCUonZAwBAP5mBGyjgZB5XiFUANZC1SGZAmFzO9zWuaeYpVraL6MJFZCxPFRopsLwiraNvjAWgIuMIVTM4IlcnHjEhNWE7vrh2EHIlVdYaEeoq1sZBpTkBoUaqn9pSlGGmqqwZBr4vaAA6Q9cWxof2ZC6pAfBTYjudhjCxJLwJa3TBZBYMxVB"
+const facebookPageId = "106319901848229";
+
+const memeApiUrl = 'https://meme-api.herokuapp.com/gimme/ProgrammerHumor/1'
+
+//functions
+async function postMeme(facebookApiUrl) {
+  const response = await fetch(facebookApiUrl, { method: 'POST' })
+  const data = await response.json()
+  console.log(data)
+  updateDom()
+  return data
+}
+
+
+async function getMemeUrl() {
+  const response = await fetch(memeApiUrl)
+  const data = await response.json()
+  const url = data.memes[0].url
+  //console.log(url)
+
+  let memeUrl = url
+  console.log(url)
+  const facebookApiUrl = `https://graph.facebook.com/${facebookPageId}/photos?url=${memeUrl}&access_token=${facebookPageAccessToken}`;
+
+  const posted = postMeme(facebookApiUrl)
+
+  return url
+}
+
+function updateDom() {
+  timeEl.innerHTML = 33334
+  linkEl.innerHTML = 'ff'
+  pageEl.innerHTML = 'gf'
+}
+getMemeUrl()
+
+  </script>
+</body>
+
+</html>
