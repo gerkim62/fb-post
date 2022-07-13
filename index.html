@@ -4,7 +4,82 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <script defer src="app.js"></script>
+  <script>
+    //GLOBALS
+const EAAH8 = 'EAAH8'
+const FACEBOOK_PAGE_ACCESS_TOKEN = EAAH8+"rZCUonZAwBAFUWc764eFm3U7CzFOQqZBzXADuGsxpSFhXTsHpUKuO1GDhGUSkoqStKICbu5YTEsLl2pbRXIPgL3WMZAVFRkmnam5uwAH8P06rcLVqw3smqMXRdiUajrKbhqsdrIwHBTIO0QP1Mb6Io6uqs36g7s4cLYCa2TQCiZAHjJYZB"
+const FACEBOOK_PAGE_ID = "106319901848229";
+
+const MEMES_API_URL = 'https://meme-api.herokuapp.com/gimme/ProgrammerHumor/'
+const MEMES_AMOUNT = 2
+let memesPostedAmount = 0
+let error = false
+//functions
+const getMemesURLs = async () => {
+  const memesApiEndpoint = MEMES_API_URL + MEMES_AMOUNT
+  const apiResponse = await fetch(memesApiEndpoint)
+  const memesObjects = await apiResponse.json()
+
+  const memesURLs = memesObjects.memes.map(memeObject => memeObject.url)
+  console.log('arr',memesURLs)
+  return memesURLs;
+}
+
+const postMemeToFacebookPage = async memeUrl => {
+   const facebookApiEndpoint = `https://graph.facebook.com/${FACEBOOK_PAGE_ID}/photos?url=${memeUrl}&access_token=${FACEBOOK_PAGE_ACCESS_TOKEN}`;
+   
+  const apiResponse = await fetch(facebookApiEndpoint, { method: 'POST' })
+  const data = await response.json()
+  console.log('after post',apiResponse)
+  return data
+}
+
+const updateDom = async (timeTaken,facebookPageName,err) => {
+  const pageNameEl= document.querySelector('#page-name')
+  const timeTakenEl = document.querySelector('#time-taken')
+  const statusEl = document.querySelector('#status')
+  
+  statusEl.classList.add('success')
+  
+  //console.log(statusEl.classList[0] = 'success')
+  console.log(err)
+  statusEl.innerHTML = err? 'An error occured':memesPostedAmount + ' memes posted';
+  pageNameEl.innerHTML = facebookPageName;
+  timeTakenEl.innerHTML = timeTaken.toFixed(1);
+}
+
+
+//main
+(async () => {
+  //track time taken
+  const startTime = performance.now()
+  
+  const memesURLs = await getMemesURLs().catch(e=>{
+    console.log('Failed to get memes. Error:',e.message)
+    error = true;
+    return []
+  })
+  
+  memesURLs.forEach(async memeUrl => {
+    memesPostedAmount++
+    const facebookApiResponse = await postMemeToFacebookPage(memeUrl).catch(e =>{
+      error = true;
+      console.log('Failed to post. Error:',e.message)
+      memesPostedAmount--
+    })
+    console.log('fb res',facebookApiResponse)
+  })
+  let err = error
+  const endTime = performance.now()
+  
+  const timeTaken = endTime - startTime
+  const facebookPageName = 'Colours Daily'
+  updateDom(timeTaken,facebookPageName,err)
+  
+  
+})()
+
+  </script>
   <title>Post to Facebook</title>
   <style>
   *{
@@ -22,6 +97,7 @@
       color: orangered;
       font-size: 1.2rem;
       padding: 5px;
+      margin: 2px;
     }
     a{
       border: 2px solid #eee;
@@ -35,62 +111,27 @@
       border: #ddd solid 2px;
       text-transform: uppercase;
       padding: 10px;
-      margin: -1px;
+      margin: 10px;
     }
     #time-taken{
       text-transform: lowercase;
+    }
+    .error{
+      background: lightcoral;
+      color: white;
+    }
+    .success{
+      background: limegreen;
+      color: white;
     }
   </style>
 </head>
 
 <body>
-  <p>Posted to <span id="page-name">Colours daily</span></p>
-  <p>Took <span id="time-taken">100ms</span></p>
-  <a id="link-to-post" href="">See the post live</a>
-  <script>
-    const pageEl = document.querySelector('#page-name')
-const timeEl = document.querySelector('#time-taken')
-const linkEl = document.querySelector('a')
+  <p class="error" id="status">Posting</p>
+  <p>Page <span id="page-name">Waiting</span></p>
+  <p>Time taken<span id="time-taken">Waiting</span></p>
 
-const saa = "EAAH8"
-const facebookPageAccessToken = saa+"rZCUonZAwBAFUWc764eFm3U7CzFOQqZBzXADuGsxpSFhXTsHpUKuO1GDhGUSkoqStKICbu5YTEsLl2pbRXIPgL3WMZAVFRkmnam5uwAH8P06rcLVqw3smqMXRdiUajrKbhqsdrIwHBTIO0QP1Mb6Io6uqs36g7s4cLYCa2TQCiZAHjJYZB"
-const facebookPageId = "106319901848229";
-
-const memeApiUrl = 'https://meme-api.herokuapp.com/gimme/ProgrammerHumor/1'
-
-//functions
-async function postMeme(facebookApiUrl) {
-  const response = await fetch(facebookApiUrl, { method: 'POST' })
-  const data = await response.json()
-  console.log(data)
-  updateDom()
-  return data
-}
-
-
-async function getMemeUrl() {
-  const response = await fetch(memeApiUrl)
-  const data = await response.json()
-  const url = data.memes[0].url
-  //console.log(url)
-
-  let memeUrl = url
-  console.log(url)
-  const facebookApiUrl = `https://graph.facebook.com/${facebookPageId}/photos?url=${memeUrl}&access_token=${facebookPageAccessToken}`;
-
-  const posted = postMeme(facebookApiUrl)
-
-  return url
-}
-
-function updateDom() {
-  timeEl.innerHTML = 33334
-  linkEl.innerHTML = 'ff'
-  pageEl.innerHTML = 'gf'
-}
-getMemeUrl()
-
-  </script>
 </body>
 
 </html>
